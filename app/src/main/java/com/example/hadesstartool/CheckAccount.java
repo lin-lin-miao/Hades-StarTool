@@ -39,6 +39,12 @@ public class CheckAccount implements Runnable{
         }
         if(accountList==null || accountList.length==0){
             GP.BR.add("目录无文件");
+            ToastUtils.toast(GP.mainActivity,"检测到未录入账号");
+            GP.mainActivity.runOnUiThread(new Runnable() {
+                public void run() {
+                    inputName(accountList,onA);
+                }
+            });
             return;
         }
         for (File file:accountList){
