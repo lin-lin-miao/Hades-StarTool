@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/account_item_list.xml" value="0.22" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/account_list_item.xml" value="0.1" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/activity_about_info.xml" value="0.22" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/activity_choice_path.xml" value="0.1" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/activity_main.xml" value="0.22" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/activity_main2.xml" value="0.19947916666666668" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/content_main.xml" value="0.19947916666666668" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/fragment_first.xml" value="0.19947916666666668" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/fragment_second.xml" value="0.19947916666666668" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/input_dialog_view.xml" value="0.19947916666666668" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/item_list.xml" value="0.1" />
+        <entry key="..\:/HST/1.3/app/src/main/res/layout/left_layout.xml" value="0.4466666666666667" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
