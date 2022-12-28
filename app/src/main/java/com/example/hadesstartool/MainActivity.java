@@ -58,7 +58,7 @@ import Utils.dataTools;
 public class MainActivity extends AppCompatActivity {
 
 
-    dataTools dataTools = new dataTools(this, GP.requestDataToolCode);
+
 
     Button btn_leftMore;
     Button btn_onLoad;
@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         GP.BR.add("onCreate");
         //<<<绑定界面
         GP.mainActivity = this;
+        GP.dataTools = new dataTools(this, GP.requestDataToolCode);
         GP.settingFile = new File(getExternalFilesDir(null), "setting");
         drawerLayout = findViewById(R.id.mainLayout);
         accountRecycler = findViewById(R.id.accountRecycler);
@@ -302,8 +303,8 @@ public class MainActivity extends AppCompatActivity {
         btn_toPhat.setText(GP.to_path.fileName);
         if (checkP()) {
             File parentFile = GP.to_path.file.getParentFile();
-            if (parentFile == null || !parentFile.exists()) {
-//            if (!dataTools.dirIsExist("/"+StringUtils.cutEnd(GP.Android_data,GP.to_path.file.toString()))) {
+            if (parentFile == null || !GP.dataTools.dirIsExist("/"+StringUtils.cutEnd(GP.Android_data,parentFile.toString()))) {
+//            if (!GP.dataTools.dirIsExist("/"+StringUtils.cutEnd(GP.Android_data,GP.to_path.file.toString()))) {
                 //提示游戏目录不存在
                 ToastUtils.toast(this, "游戏目录不存在");
                 GP.BR.add("游戏目录不存在");
@@ -429,7 +430,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (!dataTools.isPermissions()) {
+        if (!GP.dataTools.isPermissions()) {
             return false;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
@@ -465,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (!dataTools.isPermissions()) {
+            if (!GP.dataTools.isPermissions()) {
                 ToastUtils.debug(this, "无data存储权限");
                 GP.BR.add("无data存储权限");
 
@@ -485,7 +486,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 GP.BR.add("确定授权");
-                                dataTools.requestPermission();
+                                GP.dataTools.requestPermission();
                                 dialog.dismiss();
                             }
                         }).create();
@@ -552,12 +553,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        dataTools.savePermissions(requestCode, resultCode, data);
+        GP.dataTools.savePermissions(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             GP.BR.add(data.toString());
             switch (requestCode) {
                 case GP.requestDataToolCode:
-                    dataTools.savePermissions(requestCode, resultCode, data);
+                    GP.dataTools.savePermissions(requestCode, resultCode, data);
                     GP.BR.add(data.toString());
                     break;
                 case GP.Manage_All_File:

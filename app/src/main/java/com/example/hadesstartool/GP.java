@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import Utils.BugRecorder;
+import Utils.dataTools;
 
 /**
  * 全局参数
@@ -23,6 +24,8 @@ public class GP {
     static public BugRecorder BR = new BugRecorder();
     @SuppressLint("StaticFieldLeak")
     static public MainActivity mainActivity;
+    @SuppressLint("StaticFieldLeak")
+    static public Utils.dataTools dataTools;
 
     static public final String Android_data = "Android/data/";
     static public File mainFile = new File(Environment.getExternalStorageDirectory(), "HadesTool");

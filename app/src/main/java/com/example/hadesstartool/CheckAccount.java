@@ -18,8 +18,9 @@ import java.util.Arrays;
 import Utils.FileUtils;
 import Utils.StringUtils;
 import Utils.ToastUtils;
+import Utils.dataTools;
 
-public class CheckAccount implements Runnable{
+public class CheckAccount implements Runnable {
 
     @Override
     public void run() {
@@ -29,26 +30,28 @@ public class CheckAccount implements Runnable{
         checkAccount();
     }
 
-    public static void checkAccount(){
+    public static void checkAccount() {
         File[] accountList = GP.resAccount.listFiles();
         File onA = GP.to_path.file;
-        if(!onA.exists()){
+        boolean a = onA.exists();
+        a = false;
+        if (!GP.dataTools.dirIsExist("/" + StringUtils.cutEnd(GP.Android_data, onA.toString())) || !onA.exists()) {
             GP.BR.add("无载入账号");
             GP.mainActivity.setBtn_onLoad("无载入账号");
             return;
         }
-        if(accountList==null || accountList.length==0){
+        if (accountList == null || accountList.length == 0) {
             GP.BR.add("目录无文件");
-            ToastUtils.toast(GP.mainActivity,"检测到未录入账号");
+            ToastUtils.toast(GP.mainActivity, "检测到未录入账号");
             GP.mainActivity.runOnUiThread(new Runnable() {
                 public void run() {
-                    inputName(accountList,onA);
+                    inputName(accountList, onA);
                 }
             });
             return;
         }
-        for (File file:accountList){
-            if(FileUtils.checkContent(file,onA)){
+        for (File file : accountList) {
+            if (FileUtils.checkContent(file, onA)) {
                 //<<<检测到相同
                 GP.mainActivity.runOnUiThread(new Runnable() {
                     public void run() {
@@ -59,18 +62,16 @@ public class CheckAccount implements Runnable{
             }
         }
         //<<<未录入的
-        ToastUtils.toast(GP.mainActivity,"检测到未录入账号");
+        ToastUtils.toast(GP.mainActivity, "检测到未录入账号");
 
         GP.mainActivity.runOnUiThread(new Runnable() {
             public void run() {
-                inputName(accountList,onA);
+                inputName(accountList, onA);
             }
         });
-
-
     }
 
-    public static void inputName(File[] accountList,File onA){
+    public static void inputName(File[] accountList, File onA) {
         View view = GP.mainActivity.getLayoutInflater().inflate(R.layout.input_dialog_view, null);
         EditText editText = (EditText) view.findViewById(R.id.ET_input);
         AlertDialog dialog = new AlertDialog.Builder(GP.mainActivity)
@@ -89,47 +90,55 @@ public class CheckAccount implements Runnable{
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String name = editText.getText().toString();
-                        if(name.equals("")){
+                        if (name.equals("")) {
                             ToastUtils.toast(GP.mainActivity, "无效名称", Toast.LENGTH_SHORT);
                             dialog.dismiss();
                             checkAccount();
                             return;
                         }
-                        for(File file:accountList){
+                        for (File file : accountList) {
                             String acName = StringUtils.getFileName(file);
-                            if(acName.equals(name)){
-                                ToastUtils.toast(GP.mainActivity,"该名称已存在");
+                            if (acName.equals(name)) {
+                                ToastUtils.toast(GP.mainActivity, "该名称已存在");
                                 dialog.dismiss();
                                 checkAccount();
                                 return;
                             }
                         }
-                        FileUtils.Copy.fileToPortRename(onA,GP.resAccount,name+".ac");
+                        if (!FileUtils.Copy.fileToPortRename(onA, GP.resAccount, name + ".ac")) {
+                            if (onA.getParentFile() != null) {
+                                GP.dataTools.copyToSdcard("/" + StringUtils.cutEnd(GP.Android_data, onA.getParentFile().toString()), onA.getName(), GP.resAccount + name + ".ac");
+                            }else {
+
+                            }
+                        }
+                        GP.BR.add(String.valueOf(FileUtils.Copy.fileToPortRename(onA, GP.resAccount, name + ".ac")));
                         GP.accountList.clear();
                         GP.accountList.addAll(Arrays.asList(FileUtils.Sort.sortFilesA_Z(GP.resAccount.listFiles())));
                         GP.mainActivity.accountRecyclerViewAdapter.notifyDataSetChanged();
-                        ToastUtils.toast(GP.mainActivity, "已添加"+name, Toast.LENGTH_SHORT);
+                        ToastUtils.toast(GP.mainActivity, "已添加" + name, Toast.LENGTH_SHORT);
                         checkAccount();
                         dialog.dismiss();
                     }
-                }).create();
+                })
+                .create();
         dialog.show();
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public static void checkResError(){
+    public static void checkResError() {
         File[] accountList = GP.resAccount.listFiles();
-        if(accountList==null || accountList.length==0){
+        if (accountList == null || accountList.length == 0) {
             GP.BR.add("目录无文件");
             return;
         }
-        for (File file:accountList){
-            if(!file.exists())continue;
+        for (File file : accountList) {
+            if (!file.exists()) continue;
             String name = StringUtils.getFileName(file);
             String extension = StringUtils.getFileExtension(file);
-            switch (extension){
+            switch (extension) {
                 case "info":
-                    if(name.equals("login")){
+                    if (name.equals("login")) {
                         //<<<弹窗命名
                         GP.mainActivity.runOnUiThread(new Runnable() {
                             public void run() {
@@ -144,8 +153,8 @@ public class CheckAccount implements Runnable{
                                             @SuppressLint("NotifyDataSetChanged")
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                FileUtils.Copy.fileToPortRename(file,GP.resAccount,name+".ac");
-                                                ToastUtils.toast(GP.mainActivity,name+"录入成功");
+                                                FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac");
+                                                ToastUtils.toast(GP.mainActivity, name + "录入成功");
                                                 FileUtils.delete(file);
                                                 GP.accountList.clear();
                                                 GP.accountList.addAll(Arrays.asList(FileUtils.Sort.sortFilesA_Z(GP.resAccount.listFiles())));
@@ -159,23 +168,23 @@ public class CheckAccount implements Runnable{
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
                                                 String name = editText.getText().toString();
-                                                if(name.equals("")){
+                                                if (name.equals("")) {
                                                     ToastUtils.toast(GP.mainActivity, "无效名称", Toast.LENGTH_SHORT);
                                                     dialog.dismiss();
                                                     checkResError();
                                                     return;
                                                 }
-                                                for(File file:accountList){
+                                                for (File file : accountList) {
                                                     String acName = StringUtils.getFileName(file);
-                                                    if(acName.equals(name)){
-                                                        ToastUtils.toast(GP.mainActivity,"该名称已存在");
+                                                    if (acName.equals(name)) {
+                                                        ToastUtils.toast(GP.mainActivity, "该名称已存在");
                                                         dialog.dismiss();
                                                         checkResError();
                                                         return;
                                                     }
                                                 }
-                                                FileUtils.Copy.fileToPortRename(file,GP.resAccount,name+".ac");
-                                                ToastUtils.toast(GP.mainActivity, "已添加"+name, Toast.LENGTH_SHORT);
+                                                FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac");
+                                                ToastUtils.toast(GP.mainActivity, "已添加" + name, Toast.LENGTH_SHORT);
                                                 FileUtils.delete(file);
                                                 GP.accountList.clear();
                                                 GP.accountList.addAll(Arrays.asList(FileUtils.Sort.sortFilesA_Z(GP.resAccount.listFiles())));
@@ -188,9 +197,9 @@ public class CheckAccount implements Runnable{
                                 dialog.show();
                             }
                         });
-                    }else {
-                        FileUtils.Copy.fileToPortRename(file,GP.resAccount,name+".ac");
-                        ToastUtils.toast(GP.mainActivity,name+"录入成功");
+                    } else {
+                        FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac");
+                        ToastUtils.toast(GP.mainActivity, name + "录入成功");
                         FileUtils.delete(file);
                     }
                     break;
@@ -199,9 +208,9 @@ public class CheckAccount implements Runnable{
                 case "AP":
                     break;
                 default:
-                    if(FileUtils.Copy.fileToPortRename(file, GP.rubbish,file.getName())){
-                        ToastUtils.toast(GP.mainActivity,"异常文件"+file.getName()+"已移动至"+GP.rubbish);
-                        GP.BR.add("异常文件"+file.getName()+"已移动至"+GP.rubbish);
+                    if (FileUtils.Copy.fileToPortRename(file, GP.rubbish, file.getName())) {
+                        ToastUtils.toast(GP.mainActivity, "异常文件" + file.getName() + "已移动至" + GP.rubbish);
+                        GP.BR.add("异常文件" + file.getName() + "已移动至" + GP.rubbish);
                         FileUtils.delete(file);
                     }
                     break;
