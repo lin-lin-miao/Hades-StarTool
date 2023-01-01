@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import Utils.FileUtils;
 import Utils.StringUtils;
 import Utils.ToastUtils;
+import Utils.dataTools;
 
 public class AccountRecyclerViewAdapter extends RecyclerView.Adapter<AccountRecyclerViewAdapter.AccountViewHoder> {
 
@@ -55,13 +57,21 @@ public class AccountRecyclerViewAdapter extends RecyclerView.Adapter<AccountRecy
                 //<<结束游戏
                 String packageName =StringUtils.getPackage(GP.to_path.file.toString());
                 GP.mainActivity.stopGame(packageName);
-                FileUtils.delete(GP.to_path.file);
-                if (FileUtils.Copy.fileToPortRename(file, GP.to_path.file.getParentFile(), "login.info")) {
+//                FileUtils.delete(GP.to_path.file);
+                if (FileUtils.Copy.fileToPortRename(file, GP.to_path.file.getParentFile(), "login.info",true)) {
                     GP.BR.add("载入账号");
                     ToastUtils.toast(GP.mainActivity, name + "已载入");
                     GP.mainActivity.startGame(packageName);
                 }else {
-                    ToastUtils.toast(GP.mainActivity, name + "载入失败");
+                    DocumentFile onADF = dataTools.getDoucmentFile(GP.mainActivity,GP.to_path.file);
+                    DocumentFile res = DocumentFile.fromFile(file);
+                    if(onADF == null || !GP.dataTools.writeFileByStream(res,onADF)){
+                        GP.BR.add("载入失败");
+                        ToastUtils.toast(GP.mainActivity, name + "载入失败");
+                    }
+                    GP.BR.add("载入账号");
+                    ToastUtils.toast(GP.mainActivity, name + "已载入");
+                    GP.mainActivity.startGame(packageName);
                 }
             }
         });
@@ -96,7 +106,7 @@ public class AccountRecyclerViewAdapter extends RecyclerView.Adapter<AccountRecy
                                     GP.accountList.addAll(Arrays.asList(FileUtils.Sort.sortFilesA_Z(GP.resAccount.listFiles())));
                                     GP.mainActivity.accountRecyclerViewAdapter.notifyDataSetChanged();
                                 }else {
-                                    if(FileUtils.Copy.fileToPortRename(file,GP.resAccount,newName+".ac")){
+                                    if(FileUtils.Copy.fileToPortRename(file,GP.resAccount,newName+".ac",false)){
                                         FileUtils.delete(file);
                                         ToastUtils.toast(GP.mainActivity,"重命名成功");
                                         GP.accountList.clear();

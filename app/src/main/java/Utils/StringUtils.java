@@ -10,6 +10,11 @@ import java.io.File;
  */
 public class StringUtils {
 
+    /** 检查s是否包含f **/
+    public static boolean indexOf(String f,String s){
+        return s.lastIndexOf(f) != -1;
+    }
+
 
     /**
      * 截取Android包名

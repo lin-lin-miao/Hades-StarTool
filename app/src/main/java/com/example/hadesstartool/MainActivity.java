@@ -302,8 +302,17 @@ public class MainActivity extends AppCompatActivity {
         }
         btn_toPhat.setText(GP.to_path.fileName);
         if (checkP()) {
+            GP.mainFile.mkdirs();
+            GP.resAccount.mkdirs();
+            GP.rubbish.mkdirs();
             File parentFile = GP.to_path.file.getParentFile();
-            if (parentFile == null || !GP.dataTools.dirIsExist("/"+StringUtils.cutEnd(GP.Android_data,parentFile.toString()))) {
+            boolean b = parentFile.exists();
+            System.out.println(b);
+            DocumentFile parentDF = DocumentFile.fromTreeUri(MainActivity.this, Uri.parse(dataTools.changeToUri3(parentFile.getPath())));
+//            DocumentFile parentDF = DocumentFile.fromFile(GP.to_path.file);
+            boolean a = parentDF.exists();
+            System.out.println(a);
+            if ((parentFile == null || !parentFile.exists()) && !parentDF.exists() ) {
 //            if (!GP.dataTools.dirIsExist("/"+StringUtils.cutEnd(GP.Android_data,GP.to_path.file.toString()))) {
                 //提示游戏目录不存在
                 ToastUtils.toast(this, "游戏目录不存在");
@@ -312,10 +321,6 @@ public class MainActivity extends AppCompatActivity {
                 errorRecyclerViewAdapter = new ErrorRecyclerViewAdapter();
                 accountRecycler.setAdapter(errorRecyclerViewAdapter);
             } else {
-                GP.mainFile.mkdirs();
-                GP.resAccount.mkdirs();
-                GP.rubbish.mkdirs();
-
                 //检测账号
                 CheckAccount.checkResError();
                 CheckAccount.checkAccount();
@@ -365,6 +370,7 @@ public class MainActivity extends AppCompatActivity {
             method.invoke(mActivityManager, packageName);
         } catch (NoSuchMethodException | ClassNotFoundException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
+            GP.BR.add(e.getMessage());
         }
     }
 
@@ -553,7 +559,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        GP.dataTools.savePermissions(requestCode, resultCode, data);
+//        GP.dataTools.savePermissions(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             GP.BR.add(data.toString());
             switch (requestCode) {

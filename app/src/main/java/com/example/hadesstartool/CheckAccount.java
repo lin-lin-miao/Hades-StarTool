@@ -3,10 +3,13 @@ package com.example.hadesstartool;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Looper;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.documentfile.provider.DocumentFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,9 +36,11 @@ public class CheckAccount implements Runnable {
     public static void checkAccount() {
         File[] accountList = GP.resAccount.listFiles();
         File onA = GP.to_path.file;
-        boolean a = onA.exists();
-        a = false;
-        if (!GP.dataTools.dirIsExist("/" + StringUtils.cutEnd(GP.Android_data, onA.toString())) || !onA.exists()) {
+        DocumentFile onADF = dataTools.getDoucmentFile(GP.mainActivity,onA);
+
+
+
+        if (!onA.exists() && ( onADF == null ||!onADF.exists())) {
             GP.BR.add("无载入账号");
             GP.mainActivity.setBtn_onLoad("无载入账号");
             return;
@@ -51,7 +56,7 @@ public class CheckAccount implements Runnable {
             return;
         }
         for (File file : accountList) {
-            if (FileUtils.checkContent(file, onA)) {
+            if (FileUtils.checkContent(GP.mainActivity,DocumentFile.fromFile(file), onADF)) {
                 //<<<检测到相同
                 GP.mainActivity.runOnUiThread(new Runnable() {
                     public void run() {
@@ -105,20 +110,26 @@ public class CheckAccount implements Runnable {
                                 return;
                             }
                         }
-                        if (!FileUtils.Copy.fileToPortRename(onA, GP.resAccount, name + ".ac")) {
-                            if (onA.getParentFile() != null) {
-                                GP.dataTools.copyToSdcard("/" + StringUtils.cutEnd(GP.Android_data, onA.getParentFile().toString()), onA.getName(), GP.resAccount + name + ".ac");
-                            }else {
-
+                        if (!FileUtils.Copy.fileToPortRename(onA, GP.resAccount, name + ".ac",false)) {
+                            DocumentFile onADF = dataTools.getDoucmentFile(GP.mainActivity,onA);
+                            File outRes = new File(GP.resAccount,name + ".ac");
+                            FileUtils.newFile(outRes,false);
+                            DocumentFile res = DocumentFile.fromFile(outRes);
+                            if(onADF == null || !GP.dataTools.writeFileByStream(onADF,res)){
+                                GP.BR.add("添加失败");
+                                ToastUtils.toast(GP.mainActivity,  name+"添加失败", Toast.LENGTH_SHORT);
+                                dialog.dismiss();
+                                return;
                             }
                         }
-                        GP.BR.add(String.valueOf(FileUtils.Copy.fileToPortRename(onA, GP.resAccount, name + ".ac")));
+
+                        GP.BR.add("添加成功");
                         GP.accountList.clear();
                         GP.accountList.addAll(Arrays.asList(FileUtils.Sort.sortFilesA_Z(GP.resAccount.listFiles())));
                         GP.mainActivity.accountRecyclerViewAdapter.notifyDataSetChanged();
                         ToastUtils.toast(GP.mainActivity, "已添加" + name, Toast.LENGTH_SHORT);
-                        checkAccount();
                         dialog.dismiss();
+                        checkAccount();
                     }
                 })
                 .create();
@@ -153,7 +164,7 @@ public class CheckAccount implements Runnable {
                                             @SuppressLint("NotifyDataSetChanged")
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac");
+                                                FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac",false);
                                                 ToastUtils.toast(GP.mainActivity, name + "录入成功");
                                                 FileUtils.delete(file);
                                                 GP.accountList.clear();
@@ -183,7 +194,7 @@ public class CheckAccount implements Runnable {
                                                         return;
                                                     }
                                                 }
-                                                FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac");
+                                                FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac",false);
                                                 ToastUtils.toast(GP.mainActivity, "已添加" + name, Toast.LENGTH_SHORT);
                                                 FileUtils.delete(file);
                                                 GP.accountList.clear();
@@ -198,7 +209,7 @@ public class CheckAccount implements Runnable {
                             }
                         });
                     } else {
-                        FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac");
+                        FileUtils.Copy.fileToPortRename(file, GP.resAccount, name + ".ac",false);
                         ToastUtils.toast(GP.mainActivity, name + "录入成功");
                         FileUtils.delete(file);
                     }
@@ -208,7 +219,7 @@ public class CheckAccount implements Runnable {
                 case "AP":
                     break;
                 default:
-                    if (FileUtils.Copy.fileToPortRename(file, GP.rubbish, file.getName())) {
+                    if (FileUtils.Copy.fileToPortRename(file, GP.rubbish, file.getName(),false)) {
                         ToastUtils.toast(GP.mainActivity, "异常文件" + file.getName() + "已移动至" + GP.rubbish);
                         GP.BR.add("异常文件" + file.getName() + "已移动至" + GP.rubbish);
                         FileUtils.delete(file);

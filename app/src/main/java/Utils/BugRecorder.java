@@ -37,8 +37,7 @@ public class BugRecorder {
         File CacheDir = GP.mainActivity.getExternalCacheDir();
         add("end");
         saveTxt(append);
-        FileUtils.delete(new File(CacheDir,"nextLog.txt"));
-        return FileUtils.Copy.fliePortName(CacheDir,CacheDir,"log.txt","nextLog.txt");
+        return FileUtils.Copy.fliePortName(CacheDir,CacheDir,"log.txt","nextLog.txt",true);
     }
 
     public boolean saveTxt(boolean append) {

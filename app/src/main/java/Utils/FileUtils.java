@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -191,6 +193,8 @@ public class FileUtils {
         return true;
     }
 
+
+
     /** 检查inFile1与inFile2内容是否完全相同 **/
     public static boolean checkContent(File inFile1, File inFile2){
         if(!inFile1.exists()||!inFile2.exists()) return false;
@@ -200,6 +204,32 @@ public class FileUtils {
             byte[] read2 = new byte[10];
             FileInputStream inS1 = new FileInputStream(inFile1);
             FileInputStream inS2 = new FileInputStream(inFile2);
+            int len1=0;
+            int len2=0;
+            while (len1!=-1||len2!=-1){
+                len1 = inS1.read(read1);
+                len2 = inS2.read(read2);
+                if(!Arrays.equals(read1, read2)){
+                    return false;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    /** 检查inFile1与inFile2内容是否完全相同 **/
+    public static boolean checkContent(Context context,DocumentFile inFile1, DocumentFile inFile2){
+        if(!inFile1.exists()||!inFile2.exists()) return false;
+//        if(inFile1.length()!=inFile2.length()) return false;
+        try {
+            byte[] read1 = new byte[10];
+            byte[] read2 = new byte[10];
+            InputStream inS1 = context.getContentResolver().openInputStream(inFile1.getUri());
+            InputStream inS2 = context.getContentResolver().openInputStream(inFile2.getUri());
             int len1=0;
             int len2=0;
             while (len1!=-1||len2!=-1){
@@ -302,16 +332,16 @@ public class FileUtils {
 
     /** 复制类 */
     public static class Copy {
-        public static boolean filetoport(File inFile, File outPort) {
-            return fileToPortRename(inFile, outPort, inFile.getName());
+        public static boolean filetoport(File inFile, File outPort,boolean overlay) {
+            return fileToPortRename(inFile, outPort, inFile.getName(),overlay);
         }
 
-        public static boolean fileToPortRename(File inFile, File outPort, String reName) {
+        public static boolean fileToPortRename(File inFile, File outPort, String reName,boolean overlay) {
 
-            return fliePortName(inFile.getParentFile(), outPort, inFile.getName(), reName);
+            return fliePortName(inFile.getParentFile(), outPort, inFile.getName(), reName,overlay);
         }
 
-        public static boolean fliePortName(File inPort, File outPort, String inName, String outName) {
+        public static boolean fliePortName(File inPort, File outPort, String inName, String outName,boolean overlay) {
             File in = new File(inPort, inName);
             File out = new File(outPort, outName);
             if (!in.exists()) {
@@ -321,16 +351,16 @@ public class FileUtils {
             // if (out.isDirectory()) {
             // return false;
             // }
-            return FtoF(in, out);
+            return FtoF(in, out,overlay);
 
         }
 
         private static int copycount = 0;
 
         /** 将 inFile 复制到 outFile */
-        public static boolean FtoF(File inFile, File outFile) {
+        public static boolean FtoF(File inFile, File outFile,boolean overlay) {
             copycount = 0;
-            return _FtoF(inFile, outFile);
+            return _FtoF(inFile, outFile,overlay);
         }
 
         /**
@@ -338,13 +368,13 @@ public class FileUtils {
          * <p>
          * 计数封装
          */
-        private static boolean _FtoF(File inFile, File outFile) {
+        private static boolean _FtoF(File inFile, File outFile,boolean overlay) {
             if (inFile != null && inFile.exists() && outFile != null) {
                 boolean isSubdirectory = FileUtils.checkSubdirectory(inFile, outFile);
                 if (isSubdirectory && !inFile.toString().equals(outFile.toString())) {
                     return false;
                 }
-                if (outFile.exists()) {
+                if (!overlay && outFile.exists()) {
                     if (copycount == 0) {
                         outFile = new File(outFile.getParent(),
                                 StringUtils.getFileName(outFile) + "-copy" + copycount + "."
@@ -356,7 +386,7 @@ public class FileUtils {
                                         + copycount + "." + StringUtils.getFileExtension(outFile));
                     }
                     copycount++;
-                    return _FtoF(inFile, outFile);
+                    return _FtoF(inFile, outFile,overlay);
                 }
 
                 if (inFile.isFile()) {
@@ -378,7 +408,7 @@ public class FileUtils {
                     outFile.mkdirs();
                     boolean b = true;
                     for (File files : inFile.listFiles()) {
-                        if (!FtoF(files, new File(outFile, files.getName())) && b) {
+                        if (!FtoF(files, new File(outFile, files.getName()),overlay) && b) {
                             b = false;
                         }
                     }
