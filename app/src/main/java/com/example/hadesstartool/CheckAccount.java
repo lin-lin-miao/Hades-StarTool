@@ -75,6 +75,7 @@ public class CheckAccount implements Runnable {
     }
 
     public static void inputName(File[] accountList, File onA) {
+        GP.mainActivity.setBtn_onLoad("未录入");
         View view = GP.mainActivity.getLayoutInflater().inflate(R.layout.input_dialog_view, null);
         EditText editText = (EditText) view.findViewById(R.id.ET_input);
         AlertDialog dialog = new AlertDialog.Builder(GP.mainActivity)
