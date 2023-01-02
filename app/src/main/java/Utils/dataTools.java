@@ -119,7 +119,10 @@ public class dataTools {
      * 判断是否获取使用data目录权限
      * @return #返回一个boolean true有权限 false 无权限
      */
-    public boolean isPermissions() {
+    public boolean isPermissions(String path) {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.Q){
+            return true;
+        }
 //        Uri uri1 = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata");
 //        String uri = changeToUri(GP.to_path.getFile().getPath());//调用方法，把path转换成可解析的uri文本，这个方法在下面会公布
 //        Uri parse = Uri.parse(uri);
@@ -127,20 +130,16 @@ public class dataTools {
 //        DocumentFile documentFile = DocumentFile.fromTreeUri(this.context, parse);
 //        if(documentFile==null)return false;
 //        return documentFile.canWrite();
-        return isGrant(context);
+        return isGrant(context,path);
     }
 
     //判断是否已经获取了Data权限，改改逻辑就能判断其他目录，懂得都懂
-    public static boolean isGrant(Context context) {
+    public static boolean isGrant(Context context,String path) {
         for (UriPermission persistedUriPermission : context.getContentResolver().getPersistedUriPermissions()) {
             if (persistedUriPermission.isReadPermission() && persistedUriPermission.getUri().toString().equals("content://com.android.externalstorage.documents/tree/primary%3AAndroid%2Fdata")) {
                 return true;
             }
-//            String p1 = persistedUriPermission.getUri().toString();
-//            String p2 = changeToUri3(GP.to_path.getFile().getParentFile().getPath());
-//            System.out.println(p1);
-//            System.out.println(p2);
-            if (persistedUriPermission.getUri().toString().equals(changeToUri3(GP.to_path.getFile().getParentFile().getPath()))) {
+            if (persistedUriPermission.getUri().toString().equals(changeToUri3(path))) {
                 return true;
             }
         }
@@ -774,6 +773,7 @@ public class dataTools {
         }
         return res;
     }
+
     private DocumentFile getDocumentFile1(DocumentFile documentFile,String dir){
         if (documentFile==null)return null;
         try {
@@ -843,7 +843,8 @@ public class dataTools {
 //    }
 
     //根据路径获得document文件
-    public static DocumentFile getDoucmentFile(Context context, File path) {
+    public static DocumentFile getDocumentFile(Context context, File path) {
+        if(path==null)return null;
         DocumentFile documentFile = DocumentFile.fromTreeUri(context, Uri.parse(dataTools.changeToUri3(path.getParent())));
         DocumentFile on = null;
         if(documentFile == null)return null;

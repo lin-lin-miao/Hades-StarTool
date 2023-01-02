@@ -13,7 +13,12 @@ import android.widget.Toast;
 
 public class AboutInfo extends AppCompatActivity {
 
-    private static final String infoString = "更新日志:1.3\n\t1.由于上版本源码遗失,该版本为重制\n" +
+    private static final String infoString =
+            "\n更新日志:1.3.1\n\t1.解决安卓11以上无法访问目录问题\n" +
+                    "\t2.优化授权方案\n" +
+                    "\t3.解决安卓11无法自动跳转游戏\n" +
+                    "\t4.修复已知bug\n" +
+            "\n更新日志:1.3\n\t1.由于上版本源码遗失,该版本为重制\n" +
             "\t2.优化授权方案\n" +
             "\t3.优化代码逻辑\n" +
             "\t4.重制界面\n" +

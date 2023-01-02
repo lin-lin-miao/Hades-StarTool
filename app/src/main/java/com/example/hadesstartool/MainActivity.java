@@ -16,10 +16,13 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,8 +59,6 @@ import Utils.ToastUtils;
 import Utils.dataTools;
 
 public class MainActivity extends AppCompatActivity {
-
-
 
 
     Button btn_leftMore;
@@ -144,7 +145,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (checkP()) {
-                    if (!GP.to_path.file.exists()) {
+                    File onA = GP.to_path.file;
+                    DocumentFile onADF = dataTools.getDocumentFile(GP.mainActivity, onA);
+                    if (!onA.exists() && (onADF == null || !onADF.exists())) {
                         ToastUtils.toast(MainActivity.this, "账号已卸载");
                         return;
                     }
@@ -166,7 +169,15 @@ public class MainActivity extends AppCompatActivity {
                                     String p = StringUtils.getPackage(GP.to_path.file.toString());
                                     GP.BR.add("确定卸载");
                                     stopGame(p);
-                                    FileUtils.delete(GP.to_path.file);
+                                    DocumentFile onADF = dataTools.getDocumentFile(GP.mainActivity, GP.to_path.file);
+                                    if ( onADF == null || !onADF.delete()) {
+                                        GP.BR.add("卸载失败");
+                                        ToastUtils.toast(GP.mainActivity, "卸载失败");
+                                        dialog.dismiss();
+                                        return;
+                                    }
+
+                                    GP.BR.add("卸载成功");
                                     startGame(p);
                                     dialog.dismiss();
                                 }
@@ -211,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private final String[] qwq = {"阿巴阿巴", "qwq", "喵~", "喵~", "喵~", "喵~", "喵~",
-            "敲敲敲", "哼", "咬", "rua!", "笨蛋","坏蛋", "hentai", "バカバカ"};
+            "敲敲敲", "哼", "咬", "rua!", "笨蛋", "坏蛋", "hentai", "バカバカ"};
 
     public String hide() {
         GP.BR.add("hide()");
@@ -312,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
 //            DocumentFile parentDF = DocumentFile.fromFile(GP.to_path.file);
             boolean a = parentDF.exists();
             System.out.println(a);
-            if ((parentFile == null || !parentFile.exists()) && !parentDF.exists() ) {
+            if ((parentFile == null || !parentFile.exists()) && !parentDF.exists()) {
 //            if (!GP.dataTools.dirIsExist("/"+StringUtils.cutEnd(GP.Android_data,GP.to_path.file.toString()))) {
                 //提示游戏目录不存在
                 ToastUtils.toast(this, "游戏目录不存在");
@@ -359,6 +370,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopGame(String packageName) {
+
+        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> mRunningProcess = am.getRunningAppProcesses();
+        int pid = -1;
+        for (ActivityManager.RunningAppProcessInfo amProcess : mRunningProcess) {
+            if (amProcess.processName.equals(packageName)) {
+                pid = amProcess.pid;
+                break;
+            }
+        }
+        if (pid != -1) {
+            android.os.Process.killProcess(pid);
+            GP.BR.add("杀死:" + packageName);
+            return;
+        }
         ActivityManager mActivityManager = (ActivityManager)
                 GP.mainActivity.getSystemService(Context.ACTIVITY_SERVICE);
         GP.BR.add("关闭:" + packageName);
@@ -375,21 +401,60 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startGame(String packageName) {
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Intent LaunchIntent = GP.mainActivity.getPackageManager().getLaunchIntentForPackage(packageName);
-//                            LaunchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    GP.BR.add("启动:" + packageName);
-                    GP.mainActivity.startActivity(LaunchIntent);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    GP.BR.add(e.getMessage());
-                }
 
-            }
-        }, 1000);// 1秒钟后重启应用
+        Intent intent = getPackageManager().getLaunchIntentForPackage(packageName);
+
+        if (intent != null) {
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            doStartApplicationWithPackageName(packageName);
+        }
+
+    }
+
+    private void doStartApplicationWithPackageName(String packagename) {
+
+// 通过包名获取此APP详细信息，包括Activities、services、versioncode、name等等
+        PackageInfo packageinfo = null;
+        try {
+            packageinfo = getPackageManager().getPackageInfo(packagename, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            GP.BR.add(e.getMessage());
+        }
+        if (packageinfo == null) {
+            GP.BR.add("PackageInfo == null");
+            return;
+        }
+
+        // 创建一个类别为CATEGORY_LAUNCHER的该包名的Intent
+        Intent resolveIntent = new Intent(Intent.ACTION_MAIN, null);
+        resolveIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        resolveIntent.setPackage(packageinfo.packageName);
+
+// 通过getPackageManager()的queryIntentActivities方法遍历
+        List<ResolveInfo> resolveinfoList = getPackageManager()
+                .queryIntentActivities(resolveIntent, 0);
+
+        ResolveInfo resolveinfo = resolveinfoList.iterator().next();
+        if (resolveinfo != null) {
+// packagename = 参数packname
+            String packageName = resolveinfo.activityInfo.packageName;
+// 这个就是我们要找的该APP的LAUNCHER的Activity[组织形式：packagename.mainActivityname]
+            String className = resolveinfo.activityInfo.name;
+// LAUNCHER Intent
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+            // 设置ComponentName参数1:packagename参数2:MainActivity路径
+            ComponentName cn = new ComponentName(packageName, className);
+
+            intent.setComponent(cn);
+            startActivity(intent);
+        } else {
+            GP.BR.add("ResolveInfo == null");
+        }
     }
 
     @Override
@@ -436,9 +501,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        if (!GP.dataTools.isPermissions()) {
+        if (!GP.dataTools.isPermissions(GP.to_path.getFile().getParentFile().getPath())) {
             return false;
         }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
             return false;
         } else {
@@ -471,15 +537,18 @@ public class MainActivity extends AppCompatActivity {
             GP.BR.add("请求权限");
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            if (!GP.dataTools.isPermissions()) {
-                ToastUtils.debug(this, "无data存储权限");
-                GP.BR.add("无data存储权限");
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            String pk = StringUtils.getPackage(GP.to_path.getFile().getPath());
+//            DocumentFile documentFile = dataTools.getDocumentFile(MainActivity.this, new File(GP.storage_data+pk));
+//            boolean a = documentFile.exists();
+            if (!GP.dataTools.isPermissions(GP.to_path.getFile().getParentFile().getPath())) {
+                String pkn = StringUtils.getPackage(GP.to_path.file.getPath());
+                ToastUtils.debug(this, "无" + pkn + "存储权限/目录不存在");
+                GP.BR.add("无" + pkn + "存储权限/目录不存在");
                 AlertDialog dialog = new AlertDialog.Builder(this)
 //                    .setIcon(R.mipmap.icon)//设置标题的图片
-                        .setTitle("无data访问权限")//设置对话框的标题
-                        .setMessage("请授权data目录\n在弹出的页面选择data目录")//设置对话框的内容
+                        .setTitle("无" + pkn + "访问权限/目录不存在")//设置对话框的标题
+                        .setMessage("请授权" + pkn + "目录\n在弹出的页面授权即可\n(请检查是否为" + pkn + "下的目录,若不是则目录不存在)")//设置对话框的内容
                         //设置对话框的按钮
                         .setNegativeButton("取消", new DialogInterface.OnClickListener() {
                             @Override

@@ -1,6 +1,7 @@
 package Utils;
 
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -26,6 +27,7 @@ public class BugRecorder {
     }
 
     public void add(String bug) {
+        Log.e("BugRecorder", "add: "+bug);
         bugDataList.add(new BugData(bug));
     }
 

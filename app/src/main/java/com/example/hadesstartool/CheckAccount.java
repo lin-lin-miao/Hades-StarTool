@@ -36,9 +36,7 @@ public class CheckAccount implements Runnable {
     public static void checkAccount() {
         File[] accountList = GP.resAccount.listFiles();
         File onA = GP.to_path.file;
-        DocumentFile onADF = dataTools.getDoucmentFile(GP.mainActivity,onA);
-
-
+        DocumentFile onADF = dataTools.getDocumentFile(GP.mainActivity,onA);
 
         if (!onA.exists() && ( onADF == null ||!onADF.exists())) {
             GP.BR.add("无载入账号");
@@ -111,7 +109,7 @@ public class CheckAccount implements Runnable {
                             }
                         }
                         if (!FileUtils.Copy.fileToPortRename(onA, GP.resAccount, name + ".ac",false)) {
-                            DocumentFile onADF = dataTools.getDoucmentFile(GP.mainActivity,onA);
+                            DocumentFile onADF = dataTools.getDocumentFile(GP.mainActivity,onA);
                             File outRes = new File(GP.resAccount,name + ".ac");
                             FileUtils.newFile(outRes,false);
                             DocumentFile res = DocumentFile.fromFile(outRes);

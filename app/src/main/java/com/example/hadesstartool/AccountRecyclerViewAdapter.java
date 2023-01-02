@@ -63,7 +63,7 @@ public class AccountRecyclerViewAdapter extends RecyclerView.Adapter<AccountRecy
                     ToastUtils.toast(GP.mainActivity, name + "已载入");
                     GP.mainActivity.startGame(packageName);
                 }else {
-                    DocumentFile onADF = dataTools.getDoucmentFile(GP.mainActivity,GP.to_path.file);
+                    DocumentFile onADF = dataTools.getDocumentFile(GP.mainActivity,GP.to_path.file);
                     DocumentFile res = DocumentFile.fromFile(file);
                     if(onADF == null || !GP.dataTools.writeFileByStream(res,onADF)){
                         GP.BR.add("载入失败");

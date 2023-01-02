@@ -28,6 +28,7 @@ public class GP {
     static public Utils.dataTools dataTools;
 
     static public final String Android_data = "Android/data/";
+    static public final String storage_data =  "/storage/emulated/0/Android/data/";
     static public File mainFile = new File(Environment.getExternalStorageDirectory(), "HadesTool");
     static public File settingFile;
     static public File resAccount = new File(mainFile, "resAccount");
