@@ -42,6 +42,7 @@
             android:layout_height="match_parent"
             android:background="#03FFFFFF"
             android:text="pathName"
+            android:textAllCaps="false"
             android:textColor="@color/main_text"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
