@@ -2,6 +2,13 @@
 
 Hades'StarTool是专为Hades'Star开发的辅助工具，可以帮助你更快的切换账号
 
+
+
+为了确保程序安全，已部分闭源，请转到[HST-More-Language](https://github.com/lin-lin-miao/HST-More-Language)
+
+To ensure program security, partially closed source, please go to [HST-More-Language](https://github.com/lin-lin-miao/HST-More-Language)
+
+
 !!最新HadesStarTool(换号器)1.3.1上线!! 
 
 适用于Android/HarmonyOS 
